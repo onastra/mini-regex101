@@ -2,7 +2,7 @@
 
 一个轻量级的在线正则表达式测试工具，灵感来源于 [regex101](https://regex101.com/)。
 
-**在线体验**：[https://onastra.github.io/mini-regex101/](https://onastra.github.io/mini-regex101/)
+**在线体验**：[https://onastra.github.io/mini-regex101/mini-regex101.html](https://onastra.github.io/mini-regex101/mini-regex101.html)
 
 ## 功能特性
 
