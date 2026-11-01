@@ -10,34 +10,77 @@
   input,button {
     outline: none;
   }
-  #result strong:nth-of-type(odd){
+  /* #result em:nth-of-type(odd){
     font-weight: normal;
     background-color: #9fcfff;
   }
-  #result strong:nth-of-type(even){
+  #result em:nth-of-type(even){
     font-weight: normal;
     background-color: #d5ebff;
-  }
+  } */
   #output {
     position: relative;
-    width: 200px;
-    height: 100px;
+    width: 300px;
+    height: 200px;
     > textarea, #result {
+      font-family: consolas;
       white-space: pre-wrap;
       word-break: break-all;
-      position: absolute;
+      /* position: absolute; */
       width: 100%;
       height: 100%;
       border: 1px solid;
       overflow: auto;
       background-color: transparent;
+
     }
+  }
+  em {
+    font-style: normal;
+  }
+  em:not(:has(:hover)):hover {
+    outline: 2px solid grey;
+  }
+  em:not(:has(:hover)):hover em {
+    background-color: inherit;
+  }
+  /* #result > em:nth-of-type(odd){
+
+  }
+  #result > em:nth-of-type(even){
+
+  } */
+  [data-group-index="0"]:nth-of-type(odd){
+    font-weight: normal;
+    background-color: #9fcfff;
+  }
+  [data-group-index="0"]:nth-of-type(even){
+    font-weight: normal;
+    background-color: #d5ebff;
+  }
+  [data-group-index="1"] {
+    background-color: #9fcba1;
+  }
+  [data-group-index="2"] {
+    background-color: #e0bf8b;
+  }
+  [data-group-index="3"] {
+    background-color: #acadfc;
+  }
+  [data-group-index="4"] {
+    background-color: #e1abf5;
+  }
+  .zero-width-assert {
+    border-left: 2px dotted rgb(0, 119, 255);
+    opacity: 1 !important;
+    margin-left: -1px;
+    margin-right: -1px;
   }
 </style>
 <body>
   <div>
     <div>REGULAR EXPRESSION</div>
-    <input class="border" type="text" id="regexInput" onkeyup="run()">
+    <input class="border" type="text" id="regexInput" onkeyup="run()" value="(.(.)(.))(..)">
     <button class="border" onclick="run()">RUN</button>
     <div id="tips"></div>
     <div>FLAGS</div>
@@ -52,8 +95,8 @@
     
     <div>TEST STRING</div>
     <div id="output">
-      <div id="result"></div>
-      <textarea class="border" id="testStringInput" oninput="run()" onscroll="syncScroll()">
+      <div id="result" onscroll="syncScroll2()"></div>
+      <textarea class="border" id="testStringInput" oninput="run()" onscroll="syncScroll1()">
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Deserunt, quae.
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus, rem!
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. At, facere!
@@ -75,6 +118,7 @@
       } catch (error) {
         if(error instanceof SyntaxError){
           tips.innerHTML = error.message // 显示错误信息
+          return
         }else{
           throw error
         }
@@ -85,9 +129,10 @@
       var html = ""
       var match
       var pos = 0
+      var matchIndex = 0
       while(match = regex.exec(testString)){
         html += testString.slice(pos,match.index)
-        html += `<strong>${match[0]}</strong>`
+        html += highlightMatch(match,matchIndex)
         pos = regex.lastIndex
         if(match[0].length == 0){
           regex.lastIndex++
@@ -95,6 +140,7 @@
         if(regex.global == false) {
           break
         }
+        matchIndex++
       }
       html += testString.slice(pos)
       result.innerHTML = html // 这里用的不是value属性，而是innerHTML属性，因为它不是文本框
@@ -112,11 +158,49 @@
       }).join("")
     }
 
-    function syncScroll(){
+    function syncScroll1(){
       result.scrollTop = testStringInput.scrollTop // 同步文本框和div的滚动位置
     }
   
-  
+    function syncScroll2(){
+      testStringInput.scrollTop = result.scrollTop
+    }
+
+    function highlightMatch(match,matchIndex){
+      if(match[0].length == 0){
+        var info = [
+          `Match: ${matchIndex + 1}`,
+          `-----`,
+          `Group 0: [empty string]`,
+          `Pos: ${match.index}-${match.index}`
+        ].join("\n")
+        return `<em class="zero-width-assert" title = "${info}"></em>`
+      }
+
+      var helper = new Array(match[0].length+1).fill("")
+
+      var groupIndex = 0
+      for(var index of match.indices){
+        var start = index[0] - match.index
+        var end = index[1] - match.index
+        var info = `
+          Match ${matchIndex + 1}
+          -----
+          Group ${groupIndex}
+          Pos: ${index[0]}-${index[1]}
+        `
+        helper[start] += `<em data-group-index="${groupIndex}" title="${info}">`
+        helper[end] = `</em>` + helper[end]
+        groupIndex++
+      }
+
+      var result = ``
+      for (var i = 0;i < match[0].length;i++){
+        result += helper[i] + match[0][i]
+      }
+      result += helper[i]
+      return result
+    }
   </script>
   
 </body>
