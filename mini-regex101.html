@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Regex101</title>
+  <script src="https://cdn.tailwindcss.com/"></script>
+</head>
+<style>
+  input,button {
+    outline: none;
+  }
+  #result strong:nth-of-type(odd){
+    font-weight: normal;
+    background-color: #9fcfff;
+  }
+  #result strong:nth-of-type(even){
+    font-weight: normal;
+    background-color: #d5ebff;
+  }
+</style>
+<body>
+  <div>
+    <div>REGULAR EXPRESSION</div>
+    <input class="border" type="text" id="regexInput" onkeyup="run()">
+    <button class="border" onclick="run()">RUN</button>
+    <div id="tips"></div>
+    <div>FLAGS</div>
+    <label><input type="checkbox" id="flag-g" checked>g</label>
+    <label><input type="checkbox" id="flag-m">m</label>
+    <label><input type="checkbox" id="flag-i">i</label>
+    <label><input type="checkbox" id="flag-y">y</label>
+    <label><input type="checkbox" id="flag-u">u</label>
+    <label><input type="checkbox" id="flag-s">s</label>
+    <label><input type="checkbox" id="flag-d" checked>d</label>
+    <label><input type="checkbox" id="flag-v">v</label>
+    
+    <div>TEST STRING</div>
+    <textarea class="border" id="testStringInput">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Deserunt, quae.
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus, rem!
+      Lorem ipsum dolor sit amet consectetur, adipisicing elit. At, facere!
+    </textarea>
+    <div id="result"></div>
+  </div>
+  <script>
+    // 元素的id为xxx时，页面的全局就会出现一个叫xxx的变量，指向一个表示那个标签的对象
+
+    function run(){
+      var regexString = regexInput.value // 可以通过value属性读取到文本框的值
+      if(regexString == ""){
+        return
+      }
+      var flags = getFlags()
+      try {
+        var regex = new RegExp(regexString,flags)
+        tips.innerHTML = "" // 成功则清空报错信息
+      } catch (error) {
+        if(error instanceof SyntaxError){
+          tips.innerHTML = error.message // 显示错误信息
+        }else{
+          throw error
+        }
+      }
+      
+      var testString = testStringInput.value
+
+      var html = ""
+      var match
+      var pos = 0
+      while(match = regex.exec(testString)){
+        html += testString.slice(pos,match.index)
+        html += `<strong>${match[0]}</strong>`
+        pos = regex.lastIndex
+        if(match[0].length == 0){
+          regex.lastIndex++
+        }
+        if(regex.global == false) {
+          break
+        }
+      }
+      html += testString.slice(pos)
+      result.innerHTML = html // 这里用的不是value属性，而是innerHTML属性，因为它不是文本框
+    }
+
+    function getFlags(){
+      var flags = ["g","m","i","y","u","s","d","v"]
+      return flags.filter(it => {
+        var element = document.getElementById("flag-" + it)
+        if(element.checked){ // 对于checkbox来说，checked属性可以返回它是否有被打上勾
+          return true
+        } else {
+          return false
+        }
+      }).join("")
+    }
+
+  </script>
+  
+</body>
+</html>
